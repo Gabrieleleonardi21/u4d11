@@ -1,0 +1,111 @@
+{
+  "info": {
+    "name": "BlogPost API",
+    "description": "Collezione per testare le API REST di gestione dei BlogPost. Configura la variabile {{baseUrl}} nell'ambiente Postman (es. http://localhost:8080).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "postId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Crea un nuovo post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// salva l'id generato dal server per riusarlo nelle richieste successive",
+              "const jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"postId\", jsonData.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"categoria\": \"Tecnologia\",\n  \"titolo\": \"Introduzione a Spring Boot\",\n  \"contenuto\": \"Spring Boot semplifica la creazione di applicazioni Java pronte per la produzione.\",\n  \"tempoDiLettura\": 6,\n  \"pubblicato\": true\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/blogposts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blogposts"]
+        }
+      }
+    },
+    {
+      "name": "Leggi un post per id",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/blogposts/{{postId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blogposts", "{{postId}}"]
+        }
+      }
+    },
+    {
+      "name": "Leggi tutti i post",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/blogposts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blogposts"],
+          "query": [
+            {
+              "key": "pubblicato",
+              "value": "true",
+              "disabled": true,
+              "description": "EXTRA: filtro opzionale, true = pubblicati, false = bozze"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Aggiorna un post esistente",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"categoria\": \"Tecnologia\",\n  \"titolo\": \"Introduzione a Spring Boot (aggiornato)\",\n  \"contenuto\": \"Contenuto aggiornato dell'articolo su Spring Boot.\",\n  \"tempoDiLettura\": 8,\n  \"pubblicato\": true\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/blogposts/{{postId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blogposts", "{{postId}}"]
+        }
+      }
+    },
+    {
+      "name": "Cancella un post",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/api/blogposts/{{postId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blogposts", "{{postId}}"]
+        }
+      }
+    }
+  ]
+}
