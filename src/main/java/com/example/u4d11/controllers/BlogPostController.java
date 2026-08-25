@@ -3,6 +3,7 @@ package com.example.u4d11.controllers;
 import com.example.u4d11.entities.BlogPost;
 import com.example.u4d11.payloads.BlogPostPayload;
 import com.example.u4d11.services.BlogPostService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,13 +23,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/blogposts")
 public class BlogPostController {
-
+// @Column(columnDefinition = "TEXT") per non avere limiti di testo
     @Autowired
     private BlogPostService blogPostService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BlogPost create(@RequestBody BlogPostPayload payload) {
+    public BlogPost create(@RequestBody @Valid BlogPostPayload payload) {
         return blogPostService.create(payload);
     }
 
@@ -44,7 +45,7 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
-    public BlogPost update(@PathVariable UUID id, @RequestBody BlogPostPayload payload) {
+    public BlogPost update(@PathVariable UUID id, @RequestBody @Valid BlogPostPayload payload) {
         return blogPostService.update(id, payload);
     }
 

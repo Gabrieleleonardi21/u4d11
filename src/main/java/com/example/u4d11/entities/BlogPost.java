@@ -12,7 +12,7 @@ import java.util.UUID;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class BlogPost {
 
     @Id
@@ -26,4 +26,14 @@ public class BlogPost {
     private String contenuto;
     private int tempoDiLettura; // in minuti
     private boolean pubblicato; // true = pubblicato, false = bozza
+
+    public BlogPost(String categoria, String titolo, String contenuto, int tempoDiLettura, boolean pubblicato) {
+        this.categoria = categoria;
+        this.titolo = titolo;
+        this.contenuto = contenuto;
+        this.tempoDiLettura = tempoDiLettura;
+        this.pubblicato = pubblicato;
+        this.cover = "https://picsum.photos/200/300";
+
+    }
 }

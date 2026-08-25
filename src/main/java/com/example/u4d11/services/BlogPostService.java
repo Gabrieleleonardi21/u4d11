@@ -16,14 +16,12 @@ public class BlogPostService {
     @Autowired
     private BlogPostRepository blogPostRepository;
 
+    // il costruttore vuoto (@NoArgsConstructor) è riservato a JPA: qui si usa sempre quello con parametri
     public BlogPost create(BlogPostPayload payload) {
-        BlogPost blogPost = new BlogPost();
-        blogPost.setCategoria(payload.categoria());
-        blogPost.setTitolo(payload.titolo());
-        blogPost.setContenuto(payload.contenuto());
-        blogPost.setTempoDiLettura(payload.tempoDiLettura());
-        blogPost.setPubblicato(payload.pubblicato());
-        blogPost.setCover("https://picsum.photos/200/300"); // cover sempre generata dal server
+        BlogPost blogPost = new BlogPost(payload.categoria(),
+                payload.titolo(),
+                payload.contenuto(),
+                payload.tempoDiLettura(), payload.pubblicato());
         return blogPostRepository.save(blogPost);
     }
 
@@ -42,7 +40,7 @@ public class BlogPostService {
     }
 
     public BlogPost update(UUID id, BlogPostPayload payload) {
-        BlogPost blogPost = findById(id); // controllo proprio: lancia NotFoundException se l'id non esiste
+        BlogPost blogPost = findById(id); // entità già gestita da JPA: si modifica con i setter, niente new BlogPost()
         blogPost.setCategoria(payload.categoria());
         blogPost.setTitolo(payload.titolo());
         blogPost.setContenuto(payload.contenuto());
