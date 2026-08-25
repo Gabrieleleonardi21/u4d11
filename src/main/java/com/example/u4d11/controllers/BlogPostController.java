@@ -1,7 +1,7 @@
 package com.example.u4d11.controllers;
 
-import com.example.u4d11.entities.BlogPost;
 import com.example.u4d11.payloads.BlogPostPayload;
+import com.example.u4d11.payloads.BlogPostResponse;
 import com.example.u4d11.services.BlogPostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,24 +29,36 @@ public class BlogPostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BlogPost create(@RequestBody @Valid BlogPostPayload payload) {
-        return blogPostService.create(payload);
+    public BlogPostResponse create(@RequestBody @Valid BlogPostPayload payload) {
+        return BlogPostResponse.from(blogPostService.create(payload));
     }
 
     @GetMapping("/{id}")
-    public BlogPost findById(@PathVariable UUID id) {
-        return blogPostService.findById(id);
+    public BlogPostResponse findById(@PathVariable UUID id) {
+        return BlogPostResponse.from(blogPostService.findById(id));
     }
 
     @GetMapping
-    public List<BlogPost> findAll(@RequestParam(required = false) Boolean pubblicato) {
-        // pubblicato assente -> tutti i post; pubblicato=true/false -> solo quelli filtrati (EXTRA con Stream)
-        return blogPostService.findAll(pubblicato);
+    public List<BlogPostResponse> findAll(@RequestParam(required = false) Boolean pubblicato) {
+        // pubblicato assente -> tutti i post; pubblicato=true/false -> solo quelli filtrati (Derived Query)
+        return blogPostService.findAll(pubblicato).stream().map(BlogPostResponse::from).toList();
+    }
+
+    // query JPQL con LIKE sul titolo
+    @GetMapping("/ricerca")
+    public List<BlogPostResponse> cercaPerTitolo(@RequestParam String paroleChiave) {
+        return blogPostService.cercaPerTitolo(paroleChiave).stream().map(BlogPostResponse::from).toList();
+    }
+
+    // EXTRA: tutti i post di un determinato autore
+    @GetMapping("/autore/{autoreId}")
+    public List<BlogPostResponse> findByAutore(@PathVariable UUID autoreId) {
+        return blogPostService.findByAutore(autoreId).stream().map(BlogPostResponse::from).toList();
     }
 
     @PutMapping("/{id}")
-    public BlogPost update(@PathVariable UUID id, @RequestBody @Valid BlogPostPayload payload) {
-        return blogPostService.update(id, payload);
+    public BlogPostResponse update(@PathVariable UUID id, @RequestBody @Valid BlogPostPayload payload) {
+        return BlogPostResponse.from(blogPostService.update(id, payload));
     }
 
     @DeleteMapping("/{id}")
