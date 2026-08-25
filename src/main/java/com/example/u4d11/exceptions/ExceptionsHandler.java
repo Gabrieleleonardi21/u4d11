@@ -3,6 +3,7 @@ package com.example.u4d11.exceptions;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,7 +16,8 @@ public class ExceptionsHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNotFound(NotFoundException e) {
-        return e.getMessage();
+        return "La risorsa che stai cercando non esiste" +
+        e.getMessage();
     }
 
     // scatta quando @Valid sul payload trova campi non validi (es. titolo vuoto)
@@ -25,6 +27,14 @@ public class ExceptionsHandler {
         return e.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
                 .toList();
+    }
+
+    // UUID non valido nel path variable (es. "b5e5bada988l" invece di UUID corretto)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        return String.format("Il valore '%s' per '%s' non è valido. Atteso: %s",
+                e.getValue(), e.getName(), e.getRequiredType().getSimpleName());
     }
 
     // scatta quando il database rifiuta i dati per un vincolo violato (es. email UNIQUE già registrata)
