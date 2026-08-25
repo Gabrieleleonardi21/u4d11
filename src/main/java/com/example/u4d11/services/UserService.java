@@ -20,7 +20,7 @@ public class UserService {
     }
 
     public User create(UserPayload payload) {
-        User user = new User(payload.nome(), payload.cognome(), payload.email(), payload.password(), payload.ruolo());
+        User user = new User(payload.nome(), payload.cognome(), payload.email(), payload.password());
         return userRepository.save(user);
     }
 

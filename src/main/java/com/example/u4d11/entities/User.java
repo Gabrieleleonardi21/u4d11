@@ -42,11 +42,11 @@ public class User {
     @Column(nullable = false)
     private Ruolo ruolo;
 
-    public User(String nome, String cognome, String email, String password, Ruolo ruolo) {
+    public User(String nome, String cognome, String email, String password) {
         this.nome = nome;
         this.cognome = cognome;
         this.email = email;
         this.password = password;
-        this.ruolo = ruolo;
+        this.ruolo = Ruolo.USER;
     }
 }
