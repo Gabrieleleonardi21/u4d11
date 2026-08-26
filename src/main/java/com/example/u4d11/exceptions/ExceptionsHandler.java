@@ -18,7 +18,14 @@ public class ExceptionsHandler {
         return ErrorResponse.of("La risorsa che stai cercando non esiste: " + e.getMessage(), HttpStatus.NOT_FOUND.value());
     }
 
-    // scatta quando @Valid sul payload trova campi non validi (es. titolo vuoto)
+    // credenziali di login errate oppure token JWT mancante/malformato/non valido
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleUnauthorized(UnauthorizedException e) {
+        return ErrorResponse.of(e.getMessage(), HttpStatus.UNAUTHORIZED.value());
+    }
+
+    // scatta quando @Validated sul payload trova campi non validi (es. titolo vuoto)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(MethodArgumentNotValidException e) {

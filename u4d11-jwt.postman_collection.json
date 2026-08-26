@@ -1,0 +1,579 @@
+{
+  "info": {
+    "name": "u4d11 - Blog API (JWT)",
+    "description": "Collection per testare l'API u4d11 con autenticazione JWT (http://localhost:5174).\n\nORDINE CONSIGLIATO:\n1. Auth > Registrazione utente (salva automaticamente userId, non richiede token)\n2. Auth > Login (salva automaticamente accessToken, non richiede token)\n3. Users e BlogPosts: usano {{accessToken}} nell'header Authorization (impostato a livello di collection)\n4. cartella 'Casi di errore'\n5. i DELETE per ultimi: prima il post, poi l'utente (un utente con post non si puo' cancellare per via della foreign key)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5174" },
+    { "key": "userId", "value": "" },
+    { "key": "postId", "value": "" },
+    { "key": "accessToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registrazione utente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('La password non compare nella risposta', function () { pm.expect(pm.response.text()).to.not.include('password'); });",
+                  "// salva l'id dell'utente per le richieste successive",
+                  "pm.collectionVariables.set('userId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "description": "Endpoint pubblico: escluso dal filtro JWT, non richiede l'header Authorization.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Mario\",\n  \"cognome\": \"Rossi\",\n  \"email\": \"mario.rossi@example.com\",\n  \"password\": \"password1\",\n  \"ruolo\": \"USER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Il token e\\' presente nella risposta', function () { pm.expect(pm.response.json().accessToken).to.be.a('string').and.to.not.be.empty; });",
+                  "// salva il token per tutte le richieste successive, autenticate a livello di collection",
+                  "pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "description": "Endpoint pubblico: escluso dal filtro JWT. Richiede che 'Registrazione utente' sia gia' stato eseguito.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mario.rossi@example.com\",\n  \"password\": \"password1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Lista utenti",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Utente per id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Aggiorna utente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Mario Aggiornato\",\n  \"cognome\": \"Rossi\",\n  \"email\": \"mario.rossi@example.com\",\n  \"password\": \"password1\",\n  \"ruolo\": \"ADMIN\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Elimina utente (per ultimo!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 204', function () { pm.response.to.have.status(204); });"]
+              }
+            }
+          ],
+          "request": {
+            "description": "Eseguire DOPO aver eliminato i suoi blog post: se l'utente ha ancora post risponde 409 (foreign key).",
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "BlogPosts",
+      "item": [
+        {
+          "name": "Crea blog post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('La cover e\\' generata dal server', function () { pm.expect(pm.response.json().cover).to.include('https://'); });",
+                  "// salva l'id del post per le richieste successive",
+                  "pm.collectionVariables.set('postId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Richiede che 'Registrazione utente' sia gia' stato eseguito: usa {{userId}} come autoreId.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"Tecnologia\",\n  \"titolo\": \"Il mio primo post\",\n  \"contenuto\": \"Contenuto del post di prova...\",\n  \"tempoDiLettura\": 5,\n  \"pubblicato\": true,\n  \"autoreId\": \"{{userId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts"]
+            }
+          }
+        },
+        {
+          "name": "Lista post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts"]
+            }
+          }
+        },
+        {
+          "name": "Lista post pubblicati",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "description": "Cambia il valore di 'pubblicato' in false per vedere le bozze.",
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts?pubblicato=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts"],
+              "query": [{ "key": "pubblicato", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Post per id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts", "{{postId}}"]
+            }
+          }
+        },
+        {
+          "name": "Ricerca per titolo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts/ricerca?paroleChiave=primo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts", "ricerca"],
+              "query": [{ "key": "paroleChiave", "value": "primo" }]
+            }
+          }
+        },
+        {
+          "name": "Post per autore",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts/autore/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts", "autore", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Aggiorna blog post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"Tecnologia\",\n  \"titolo\": \"Titolo aggiornato\",\n  \"contenuto\": \"Contenuto aggiornato...\",\n  \"tempoDiLettura\": 8,\n  \"pubblicato\": false,\n  \"autoreId\": \"{{userId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts", "{{postId}}"]
+            }
+          }
+        },
+        {
+          "name": "Elimina blog post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 204', function () { pm.response.to.have.status(204); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts", "{{postId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Casi di errore",
+      "item": [
+        {
+          "name": "Login con credenziali errate -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 401', function () { pm.response.to.have.status(401); });"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "description": "Stessa email di 'Login' ma password sbagliata.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mario.rossi@example.com\",\n  \"password\": \"passwordSbagliata1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Richiesta senza token -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 401', function () { pm.response.to.have.status(401); });"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "description": "Endpoint protetto senza header Authorization: il filtro JWT lo rifiuta.",
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Richiesta con token non valido -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 401', function () { pm.response.to.have.status(401); });"]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "token.non.valido", "type": "string" }]
+            },
+            "description": "Token JWT malformato: verifyToken() lo rifiuta.",
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Email duplicata -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 409', function () { pm.response.to.have.status(409); });"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "description": "Stessa email di 'Registrazione utente': il vincolo UNIQUE del database la rifiuta.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Luigi\",\n  \"cognome\": \"Verdi\",\n  \"email\": \"mario.rossi@example.com\",\n  \"password\": \"password1\",\n  \"ruolo\": \"USER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Utente non valido -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 400', function () { pm.response.to.have.status(400); });"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "description": "Email malformata e password troppo corta: la validazione elenca entrambi gli errori.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Test\",\n  \"cognome\": \"Test\",\n  \"email\": \"nonvalida\",\n  \"password\": \"corta\",\n  \"ruolo\": \"USER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Utente inesistente -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 404', function () { pm.response.to.have.status(404); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/11111111-1111-1111-1111-111111111111",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "11111111-1111-1111-1111-111111111111"]
+            }
+          }
+        },
+        {
+          "name": "BlogPost non valido -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 400', function () { pm.response.to.have.status(400); });"]
+              }
+            }
+          ],
+          "request": {
+            "description": "Titolo vuoto e tempoDiLettura sotto il minimo.",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"Tecnologia\",\n  \"titolo\": \"\",\n  \"contenuto\": \"Contenuto...\",\n  \"tempoDiLettura\": 0,\n  \"pubblicato\": true,\n  \"autoreId\": \"{{userId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts"]
+            }
+          }
+        },
+        {
+          "name": "Autore inesistente -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Status 404', function () { pm.response.to.have.status(404); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"Tecnologia\",\n  \"titolo\": \"Post orfano\",\n  \"contenuto\": \"Contenuto...\",\n  \"tempoDiLettura\": 3,\n  \"pubblicato\": true,\n  \"autoreId\": \"11111111-1111-1111-1111-111111111111\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogposts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogposts"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

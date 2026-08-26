@@ -3,9 +3,9 @@ package com.example.u4d11.controllers;
 import com.example.u4d11.payloads.BlogPostPayload;
 import com.example.u4d11.payloads.BlogPostResponse;
 import com.example.u4d11.services.BlogPostService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +29,7 @@ public class BlogPostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BlogPostResponse create(@RequestBody @Valid BlogPostPayload payload) {
+    public BlogPostResponse create(@RequestBody @Validated BlogPostPayload payload) {
         return BlogPostResponse.from(blogPostService.create(payload));
     }
 
@@ -57,7 +57,7 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
-    public BlogPostResponse update(@PathVariable UUID id, @RequestBody @Valid BlogPostPayload payload) {
+    public BlogPostResponse update(@PathVariable UUID id, @RequestBody @Validated BlogPostPayload payload) {
         return BlogPostResponse.from(blogPostService.update(id, payload));
     }
 

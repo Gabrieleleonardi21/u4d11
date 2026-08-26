@@ -3,9 +3,9 @@ package com.example.u4d11.controllers;
 import com.example.u4d11.payloads.UserPayload;
 import com.example.u4d11.payloads.UserResponse;
 import com.example.u4d11.services.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +28,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse create(@RequestBody @Valid UserPayload payload) {
+    public UserResponse create(@RequestBody @Validated UserPayload payload) {
         return UserResponse.from(userService.create(payload));
     }
 
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public UserResponse update(@PathVariable UUID id, @RequestBody @Valid UserPayload payload) {
+    public UserResponse update(@PathVariable UUID id, @RequestBody @Validated UserPayload payload) {
         return UserResponse.from(userService.update(id, payload));
     }
 
