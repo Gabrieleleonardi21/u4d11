@@ -14,7 +14,7 @@ import java.util.Date;
 @Component
 public class JwtTools {
 
-    @Value("${jwt.secret}")
+    @Value("${spring.jwt.secret}")
     private String secret;
 
     // genera un token valido 24 ore con l'id dell'utente come subject
