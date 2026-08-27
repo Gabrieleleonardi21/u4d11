@@ -2,6 +2,7 @@ package com.example.u4d11.security;
 
 import com.example.u4d11.entities.User;
 import com.example.u4d11.exceptions.UnauthorizedException;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -27,10 +28,10 @@ public class JwtTools {
                 .compact();
     }
 
-    // verifica firma e scadenza; qualunque anomalia (token alterato, scaduto, malformato) diventa un 401
-    public void verifyToken(String accessToken) {
+    // verifica firma e scadenza (401 se alterato/scaduto/malformato) e restituisce le claims, da cui il filtro ricava l'utente
+    public Claims verifyToken(String accessToken) {
         try {
-            Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(accessToken);
+            return Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(accessToken).getPayload();
         } catch (JwtException e) {
             throw new UnauthorizedException("Il token fornito non è valido o è scaduto");
         }

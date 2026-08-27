@@ -1,12 +1,11 @@
 package com.example.u4d11.payloads;
 
-import com.example.u4d11.entities.Ruolo;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-// DTO usato per POST e PUT di User
+// DTO usato per POST e PUT di User: il ruolo non è impostabile dal client (sempre USER in creazione,
+// invariato in aggiornamento) per evitare che un utente si auto-assegni ADMIN
 public record UserPayload(
         @NotBlank(message = "Il nome è obbligatorio")
         String nome,
@@ -20,8 +19,6 @@ public record UserPayload(
                 regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$",
                 message = "La password deve contenere almeno 8 caratteri, con almeno una lettera e un numero"
         )
-        String password,
-        @NotNull(message = "Il ruolo è obbligatorio (USER o ADMIN)")
-        Ruolo ruolo
+        String password
 ) {
 }

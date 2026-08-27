@@ -4,6 +4,7 @@ import com.example.u4d11.entities.User;
 import com.example.u4d11.exceptions.NotFoundException;
 import com.example.u4d11.payloads.UserPayload;
 import com.example.u4d11.repositories.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,14 +14,16 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // constructor injection: con un solo costruttore Spring inietta da solo, senza @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User create(UserPayload payload) {
-        User user = new User(payload.nome(), payload.cognome(), payload.email(), payload.password());
+        User user = new User(payload.nome(), payload.cognome(), payload.email(), passwordEncoder.encode(payload.password()));
         return userRepository.save(user);
     }
 
@@ -37,8 +40,7 @@ public class UserService {
         user.setNome(payload.nome());
         user.setCognome(payload.cognome());
         user.setEmail(payload.email());
-        user.setPassword(payload.password());
-        user.setRuolo(payload.ruolo());
+        user.setPassword(passwordEncoder.encode(payload.password()));
         return userRepository.save(user);
     }
 

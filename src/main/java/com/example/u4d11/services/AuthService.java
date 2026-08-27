@@ -5,6 +5,7 @@ import com.example.u4d11.exceptions.UnauthorizedException;
 import com.example.u4d11.payloads.LoginPayload;
 import com.example.u4d11.repositories.UserRepository;
 import com.example.u4d11.security.JwtTools;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,17 +13,19 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtTools jwtTools;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository, JwtTools jwtTools) {
+    public AuthService(UserRepository userRepository, JwtTools jwtTools, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtTools = jwtTools;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public String login(LoginPayload payload) {
         User user = userRepository.findByEmail(payload.email())
                 .orElseThrow(() -> new UnauthorizedException("Email o password errati"));
 
-        if (!user.getPassword().equals(payload.password())) {
+        if (!passwordEncoder.matches(payload.password(), user.getPassword())) {
             throw new UnauthorizedException("Email o password errati");
         }
 

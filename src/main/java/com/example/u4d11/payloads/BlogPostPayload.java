@@ -2,11 +2,9 @@ package com.example.u4d11.payloads;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-import java.util.UUID;
-
-// DTO usato per POST e PUT: niente id né cover, così il client non può proprio inviarli
+// DTO usato per POST e PUT: niente id, cover né autore, così il client non può proprio inviarli
+// (l'autore è sempre l'utente autenticato, mai un valore scelto dal client)
 public record BlogPostPayload(
         @NotBlank(message = "La categoria è obbligatoria")
         String categoria,
@@ -16,8 +14,6 @@ public record BlogPostPayload(
         String contenuto,
         @Min(value = 1, message = "Il tempo di lettura deve essere di almeno 1 minuto")
         int tempoDiLettura,
-        boolean pubblicato,
-        @NotNull(message = "L'id dell'autore è obbligatorio")
-        UUID autoreId
+        boolean pubblicato
 ) {
 }

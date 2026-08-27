@@ -5,7 +5,6 @@ import com.example.u4d11.entities.User;
 import com.example.u4d11.exceptions.NotFoundException;
 import com.example.u4d11.payloads.BlogPostPayload;
 import com.example.u4d11.repositories.BlogPostRepository;
-import com.example.u4d11.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,17 +14,15 @@ import java.util.UUID;
 public class BlogPostService {
 
     private final BlogPostRepository blogPostRepository;
-    private final UserRepository userRepository;
 
     // constructor injection: con un solo costruttore Spring inietta da solo, senza @Autowired
-    public BlogPostService(BlogPostRepository blogPostRepository, UserRepository userRepository) {
+    public BlogPostService(BlogPostRepository blogPostRepository) {
         this.blogPostRepository = blogPostRepository;
-        this.userRepository = userRepository;
     }
 
-    // il costruttore vuoto di BlogPost è riservato a JPA: qui si usa sempre quello con parametri
-    public BlogPost create(BlogPostPayload payload) {
-        User autore = findAutore(payload.autoreId());
+    // il costruttore vuoto di BlogPost è riservato a JPA: qui si usa sempre quello con parametri.
+    // autore è sempre l'utente autenticato (passato dal controller), mai un id scelto dal client
+    public BlogPost create(BlogPostPayload payload, User autore) {
         BlogPost blogPost = new BlogPost(payload.categoria(),
                 payload.titolo(),
                 payload.contenuto(),
@@ -61,8 +58,7 @@ public class BlogPostService {
         blogPost.setContenuto(payload.contenuto());
         blogPost.setTempoDiLettura(payload.tempoDiLettura());
         blogPost.setPubblicato(payload.pubblicato());
-        blogPost.setAutore(findAutore(payload.autoreId()));
-        // cover non viene mai toccata in fase di update
+        // cover e autore non vengono mai toccati in fase di update: l'autore non cambia mai dopo la creazione
         return blogPostRepository.save(blogPost);
     }
 
@@ -71,8 +67,8 @@ public class BlogPostService {
         blogPostRepository.delete(blogPost);
     }
 
-    private User findAutore(UUID autoreId) {
-        return userRepository.findById(autoreId)
-                .orElseThrow(() -> new NotFoundException("Autore con id " + autoreId + " non trovato"));
+    // esposto come SpEL bean per @PreAuthorize: @blogPostService.isAuthor(#id, authentication.principal)
+    public boolean isAuthor(UUID id, User user) {
+        return findById(id).getAutore().getId().equals(user.getId());
     }
 }

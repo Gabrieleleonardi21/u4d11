@@ -3,6 +3,7 @@ package com.example.u4d11.exceptions;
 import com.example.u4d11.payloads.ErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,6 +24,13 @@ public class ExceptionsHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleUnauthorized(UnauthorizedException e) {
         return ErrorResponse.of(e.getMessage(), HttpStatus.UNAUTHORIZED.value());
+    }
+
+    // scatta quando @PreAuthorize nega l'accesso (ruolo o ownership non sufficienti)
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAccessDenied(AccessDeniedException e) {
+        return ErrorResponse.of("Non hai i permessi necessari per eseguire questa operazione", HttpStatus.FORBIDDEN.value());
     }
 
     // scatta quando @Validated sul payload trova campi non validi (es. titolo vuoto)

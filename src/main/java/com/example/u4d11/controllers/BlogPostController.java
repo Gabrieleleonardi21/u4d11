@@ -1,10 +1,13 @@
 package com.example.u4d11.controllers;
 
+import com.example.u4d11.entities.User;
 import com.example.u4d11.payloads.BlogPostPayload;
 import com.example.u4d11.payloads.BlogPostResponse;
 import com.example.u4d11.services.BlogPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,8 +32,8 @@ public class BlogPostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BlogPostResponse create(@RequestBody @Validated BlogPostPayload payload) {
-        return BlogPostResponse.from(blogPostService.create(payload));
+    public BlogPostResponse create(@RequestBody @Validated BlogPostPayload payload, @AuthenticationPrincipal User currentUser) {
+        return BlogPostResponse.from(blogPostService.create(payload, currentUser));
     }
 
     @GetMapping("/{id}")
@@ -57,12 +60,14 @@ public class BlogPostController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @blogPostService.isAuthor(#id, authentication.principal)")
     public BlogPostResponse update(@PathVariable UUID id, @RequestBody @Validated BlogPostPayload payload) {
         return BlogPostResponse.from(blogPostService.update(id, payload));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN') or @blogPostService.isAuthor(#id, authentication.principal)")
     public void delete(@PathVariable UUID id) {
         blogPostService.delete(id);
     }
